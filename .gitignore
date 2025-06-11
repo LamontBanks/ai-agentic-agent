@@ -2,3 +2,4 @@ venv/
 
 notes.txt
 .env
+calculator/__pycache__
