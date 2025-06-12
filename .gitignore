@@ -3,3 +3,4 @@ venv/
 notes.txt
 .env
 calculator/__pycache__
+__pycache__/
