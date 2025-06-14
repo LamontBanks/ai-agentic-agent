@@ -36,21 +36,17 @@ def get_files_info(working_directory, directory=None):
     
     # Compile file metadata
     contents_metadata = ""
-    full_path_prefix = os.path.join(working_directory, directory)
-    directory_contents = sorted(os.listdir(full_path_prefix))   # Sorted for unit tests
+    directory_contents = sorted(os.listdir(target_dir))   # Sorted for unit tests
 
     # Get the size, is_directory status of each item
     # Append into a singular, newline-seperated string
+    # try-except in case of file errors
     try:
         for file_or_folder in directory_contents:
-            file_or_folder_name = file_or_folder
-
-            file_or_folder_abs_path = os.path.join(full_path_prefix, file_or_folder)
-            file_or_folder_size_bytes = os.path.getsize(file_or_folder_abs_path)
-
             is_dir = not os.path.isfile(file_or_folder)
+            file_or_folder_size_bytes = os.path.getsize(os.path.join(target_dir, file_or_folder))
 
-            contents_metadata += f"- {file_or_folder_name}: file_size={file_or_folder_size_bytes} bytes, is_dir={is_dir}\n"
+            contents_metadata += f"- {file_or_folder}: file_size={file_or_folder_size_bytes} bytes, is_dir={is_dir}\n"
         return contents_metadata.rstrip()
     except Exception as e:
         return f"Error reading files in {target_dir}: {e}"
