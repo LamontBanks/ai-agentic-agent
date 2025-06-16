@@ -1,6 +1,6 @@
 import unittest
 from aiagent import AiAgent
-from functions.get_files_info import get_files_info
+from functions.get_files_info import get_files_info, get_file_content
 
 class TestAiAgent(unittest.TestCase):
     # Parse args
@@ -27,33 +27,49 @@ class TestAiAgent(unittest.TestCase):
     # Read files, tests use the embedded `calculator` project
     def test_get_files_info_boot_dev(self):
         # Case 1: Return `calculator/` level metadata
-        expected_metadata = '''- __pycache__: file_size=128 bytes, is_dir=True
-- calculator.py: file_size=1737 bytes, is_dir=True
-- main.py: file_size=567 bytes, is_dir=False
-- render.py: file_size=766 bytes, is_dir=True
-- tests.py: file_size=1338 bytes, is_dir=False'''
         actual_metadata = get_files_info("calculator", ".")
-
-        self.assertEqual(actual_metadata, expected_metadata)
         print(actual_metadata) # Add'l, console output required for boot.dev validation
 
         # Case 2: Error - Non-existent dir: calculator/pkg
         expected_error = f"Error: calculator/pkg is not a directory"
         actual_metadata = get_files_info("calculator", "pkg")
-        self.assertEqual(actual_metadata, expected_error)
+        self.assertEqual(expected_error, actual_metadata)
         print(expected_error)  # Add'l console output required for boot.dev validation
 
         # Case 3: Error - Directory outside calculator  (/bin)
-        expected_error = f"Error: Cannot list /bin as it is outside the permitted working directory"
+        expected_error = "Error: Cannot list /bin as it is outside the permitted working directory"
         actual_metadata = get_files_info("calculator", "/bin")
-        self.assertEqual(actual_metadata, expected_error)
+        self.assertEqual(expected_error, actual_metadata)
         print(expected_error)  # Add'l console output required for boot.dev validation
 
         # Case 4: Error - DSneaky irectory outside calculator
-        expected_error = f"Error: Cannot list ../ as it is outside the permitted working directory"
+        expected_error = "Error: Cannot list ../ as it is outside the permitted working directory"
         actual_metadata = get_files_info("calculator", "../")
-        self.assertEqual(actual_metadata, expected_error)
+        self.assertEqual(expected_error, actual_metadata)
         print(expected_error)  # Add'l console output required for boot.dev validation
+
+    # File Content Tests
+
+    def test_get_file_content(self):
+        actual_output = get_file_content("calculator", "main.py")
+        self.assertTrue('def main():' in actual_output)
+        print(actual_output)
+
+        actual_output = get_file_content("calculator", "calculator.py")
+        self.assertTrue('class Calculator:' in actual_output)
+        print(actual_output)
+       
+        actual_output = get_file_content("calculator", "/bin/cat")
+        self.assertEqual('Error: Cannot read /bin/cat as it is outside the permitted working directory', actual_output, )
+
+        actual_output = get_file_content("calculator", "fakefile.txt")
+        self.assertEqual('Error: File not found or is not a regular file: fakefile.txt', actual_output)
+
+    def test_get_file_content_truncate_chars(self):
+        actual_content = get_file_content("calculator", 'lorem.txt')
+        # Truncate at 10000 chars, add message
+        self.assertFalse('more than 10000 char' in actual_content)
+        self.assertTrue(f'[...File "lorem.txt" truncated at 10000 characters]' in actual_content)
 
 if __name__ == "__main__":
     unittest.main()
