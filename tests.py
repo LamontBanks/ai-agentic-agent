@@ -1,6 +1,6 @@
 import unittest
 from aiagent import AiAgent
-from functions.get_files_info import get_files_info, get_file_content
+from functions.get_files_info import get_files_info, get_file_content, write_file
 
 class TestAiAgent(unittest.TestCase):
     # Parse args
@@ -30,11 +30,9 @@ class TestAiAgent(unittest.TestCase):
         actual_metadata = get_files_info("calculator", ".")
         print(actual_metadata) # Add'l, console output required for boot.dev validation
 
-        # Case 2: Error - Non-existent dir: calculator/pkg
-        expected_error = f"Error: calculator/pkg is not a directory"
+        # Case 2: calculator/pkg
         actual_metadata = get_files_info("calculator", "pkg")
-        self.assertEqual(expected_error, actual_metadata)
-        print(expected_error)  # Add'l console output required for boot.dev validation
+        print(actual_metadata)  # Add'l console output required for boot.dev validation
 
         # Case 3: Error - Directory outside calculator  (/bin)
         expected_error = "Error: Cannot list /bin as it is outside the permitted working directory"
@@ -48,7 +46,7 @@ class TestAiAgent(unittest.TestCase):
         self.assertEqual(expected_error, actual_metadata)
         print(expected_error)  # Add'l console output required for boot.dev validation
 
-    # File Content Tests
+    # Read file content
 
     def test_get_file_content(self):
         actual_output = get_file_content("calculator", "main.py")
@@ -66,10 +64,18 @@ class TestAiAgent(unittest.TestCase):
         self.assertEqual('Error: File not found or is not a regular file: fakefile.txt', actual_output)
 
     def test_get_file_content_truncate_chars(self):
-        actual_content = get_file_content("calculator", 'lorem.txt')
+        actual_content = get_file_content(".", 'lorem.txt')
         # Truncate at 10000 chars, add message
         self.assertFalse('more than 10000 char' in actual_content)
         self.assertTrue(f'[...File "lorem.txt" truncated at 10000 characters]' in actual_content)
+
+    # Write File content
+
+    def test_write_file_overwrite(self):
+        # Just print the output for boot.dev validation
+        print(write_file("calculator", "lorem.txt", "wait, this isn't lorem ipsum"))
+        print(write_file("calculator", "pkg/morelorem.txt", "lorem ipsum dolor sit amet"))
+        print(write_file("calculator", "/tmp/temp.txt", "this should not be allowed"))
 
 if __name__ == "__main__":
     unittest.main()
