@@ -26,6 +26,7 @@ class AiAgent:
 
         load_dotenv()
         self.api_key = os.environ.get("GEMINI_API_KEY")
+        self.system_prompt = os.environ.get("SYSTEM_PROMPT")
 
     def send_prompt(self):
         # Store the list of messages in the conversation
@@ -37,7 +38,9 @@ class AiAgent:
         client = genai.Client(api_key=self.api_key)
         response = client.models.generate_content(
             # Free-tier: gemini-2.0-flash-001
-            model='gemini-2.0-flash-001', contents=user_messages
+            model='gemini-2.0-flash-001',
+            contents=user_messages,
+            config=types.GenerateContentConfig(system_instruction=self.system_prompt)
         )
 
         # Output
